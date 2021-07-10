@@ -2,7 +2,7 @@
 
 #include "versionizer.hpp"
 
-TEST_CASE("versionToString() check", "[vrsionizer]")
+TEST_CASE("versionToString() check", "[versionizer]")
 {
     auto vizer = versionizer::Versionizer();
 
