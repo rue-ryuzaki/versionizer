@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Argument parser for C++11 (ArgumentParser v0.1.2)
+ * Argument parser for C++11 (ArgumentParser v0.1.3)
  *
  * Copyright (c) 2021 Golubchikov Mihail
  *
@@ -29,7 +29,7 @@
 
 #define ARGPARSE_VERSION_MAJOR 0
 #define ARGPARSE_VERSION_MINOR 1
-#define ARGPARSE_VERSION_PATCH 2
+#define ARGPARSE_VERSION_PATCH 3
 #define ARGPARSE_VERSION_RC 0
 
 #include <algorithm>
@@ -52,6 +52,9 @@
 
 namespace argparse {
 namespace detail {
+size_t const _usage_limit = 80;
+size_t const _argument_help_limit = 24;
+
 static inline void _ltrim(std::string& s)
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), not1(std::ptr_fun<int, int>(isspace))));
@@ -442,7 +445,7 @@ public:
             return res;
         }
 
-        std::string print() const
+        std::string flags_to_string() const
         {
             std::string res;
             if (type() == Optional) {
@@ -458,9 +461,18 @@ public:
             } else {
                 res += get_nargs_suffix();
             }
-            res = "  " + res;
+            return res;
+        }
+
+        std::string print(size_t limit = detail::_argument_help_limit) const
+        {
+            std::string res = "  " + flags_to_string();
             if (!help().empty()) {
-                res += "\t" + help();
+                if (res.size() + 2 > limit) {
+                    res += "\n" + std::string(detail::_argument_help_limit, ' ') + help();
+                } else {
+                    res += std::string(limit - res.size(), ' ') + help();
+                }
             }
             return res;
         }
@@ -955,18 +967,33 @@ public:
         if (!m_description.empty()) {
             os << std::endl << m_description << std::endl;
         }
+        size_t argument_help_size = 0;
         auto const positional = positional_arguments();
+        auto const optional = optional_arguments();
+        for (auto const& arg : positional) {
+            if (argument_help_size < arg.flags_to_string().size()) {
+                argument_help_size = arg.flags_to_string().size();
+            }
+        }
+        for (auto const& arg : optional) {
+            if (argument_help_size < arg.flags_to_string().size()) {
+                argument_help_size = arg.flags_to_string().size();
+            }
+        }
+        argument_help_size += 4;
+        if (argument_help_size > detail::_argument_help_limit) {
+            argument_help_size = detail::_argument_help_limit;
+        }
         if (!positional.empty()) {
             os << std::endl << "positional arguments:" << std::endl;
             for (auto const& arg : positional) {
-                os << arg.print() << std::endl;
+                os << arg.print(argument_help_size) << std::endl;
             }
         }
-        auto const optional = optional_arguments();
         if (!optional.empty()) {
             os << std::endl << "optional arguments:" << std::endl;
             for (auto const& arg : optional) {
-                os << arg.print() << std::endl;
+                os << arg.print(argument_help_size) << std::endl;
             }
         }
         if (!m_epilog.empty()) {
@@ -1577,11 +1604,48 @@ private:
     {
         if (m_usage.empty()) {
             auto res = m_prog;
-            for (auto const& arg : optional_arguments()) {
-                res += " [" + arg() + "]";
+
+            size_t argument_usage_size = 0;
+            auto const positional = positional_arguments();
+            auto const optional = optional_arguments();
+            for (auto const& arg : positional) {
+                if (argument_usage_size < arg().size()) {
+                    argument_usage_size = arg().size();
+                }
             }
-            for (auto const& arg : positional_arguments()) {
-                res += " " + arg();
+            for (auto const& arg : optional) {
+                if (argument_usage_size < arg().size()) {
+                    argument_usage_size = arg().size();
+                }
+            }
+            size_t usage_length = std::string("usage: ").size();
+            size_t pos = usage_length + m_prog.size();
+            size_t offset = usage_length;
+            if (pos + (argument_usage_size > 0 ? (1 + argument_usage_size) : 0) <= detail::_usage_limit) {
+                offset += m_prog.size() + (argument_usage_size > 0 ? 1 : 0);
+            } else if (!(optional.empty() && positional.empty())) {
+                res += "\n" + std::string(offset - 1, ' ');
+                pos = offset - 1;
+            }
+            for (auto const& arg : optional) {
+                auto str = arg();
+                if ((pos + 1 == offset) || (pos + 1 + str.size() <= detail::_usage_limit)) {
+                    res += " [" + str + "]";
+                } else {
+                    res += "\n" + std::string(offset, ' ') + "[" + str + "]";
+                    pos = offset;
+                }
+                pos += 1 + str.size();
+            }
+            for (auto const& arg : positional) {
+                auto str = arg();
+                if ((pos + 1 == offset) || (pos + 1 + str.size() <= detail::_usage_limit)) {
+                    res += " " + str + "";
+                } else {
+                    res += "\n" + std::string(offset, ' ') + str;
+                    pos = offset;
+                }
+                pos += 1 + str.size();
             }
             return res;
         }
