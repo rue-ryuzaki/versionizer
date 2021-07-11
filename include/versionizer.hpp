@@ -54,7 +54,7 @@ struct Version
     int patch;
     int rc;
 
-    void apply_major(Type type)
+    Version& apply_major(Type type)
     {
         validate(type);
         switch (type) {
@@ -106,9 +106,10 @@ struct Version
             default :
                 throw std::logic_error("error: invalid version type");
         }
+        return *this;
     }
 
-    void apply_minor(Type type)
+    Version& apply_minor(Type type)
     {
         validate(type);
         switch (type) {
@@ -140,9 +141,10 @@ struct Version
             default :
                 throw std::logic_error("error: invalid version type");
         }
+        return *this;
     }
 
-    void apply_patch(Type type)
+    Version& apply_patch(Type type)
     {
         validate(type);
         switch (type) {
@@ -153,15 +155,16 @@ struct Version
                 if (rc == 0) {
                     ++patch;
                 } else {
-                    rc = 0;
+                    throw std::invalid_argument("error: invalid rc version");
                 }
                 break;
             default :
                 throw std::logic_error("error: invalid version type");
         }
+        return *this;
     }
 
-    void apply_rc(Type type)
+    Version& apply_rc(Type type)
     {
         validate(type);
         switch (type) {
@@ -175,16 +178,21 @@ struct Version
                 break;
             case MMR :
                 if (rc == 0) {
-                    ++minor;
-                } else if (minor <= 0) {
+                    ++major;
+                    minor = 0;
+                } else if (major <= 0) {
+                    throw std::invalid_argument("error: invalid minor version");
+                } else if (minor > 0) {
                     throw std::invalid_argument("error: invalid minor version");
                 }
                 ++rc;
                 break;
             case MMPR :
                 if (rc == 0) {
-                    ++patch;
-                } else if (patch <= 0) {
+                    ++minor;
+                } else if (minor <= 0) {
+                    throw std::invalid_argument("error: invalid minor version");
+                } else if (patch > 0) {
                     throw std::invalid_argument("error: invalid patch version");
                 }
                 ++rc;
@@ -192,9 +200,10 @@ struct Version
             default :
                 throw std::logic_error("error: invalid version type");
         }
+        return *this;
     }
 
-    void apply_rc_major(Type type)
+    Version& apply_rc_major(Type type)
     {
         validate(type);
         switch (type) {
@@ -234,20 +243,13 @@ struct Version
             default :
                 throw std::logic_error("error: invalid version type");
         }
+        return *this;
     }
 
-    void apply_rc_minor(Type type)
+    Version& apply_rc_minor(Type type)
     {
         validate(type);
         switch (type) {
-            case MMR :
-                if (rc == 0) {
-                    ++minor;
-                } else if (minor <= 0) {
-                    throw std::invalid_argument("error: invalid minor version");
-                }
-                ++rc;
-                break;
             case MMPR :
                 if (rc == 0) {
                     ++minor;
@@ -262,6 +264,7 @@ struct Version
             default :
                 throw std::logic_error("error: invalid version type");
         }
+        return *this;
     }
 
     std::string to_string(Type type) const
