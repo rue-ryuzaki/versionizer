@@ -339,6 +339,41 @@ struct Version
         return res;
     }
 
+    void patchFile(std::string const& file, std::string const& name) const
+    {
+        std::vector<std::string> data;
+        std::ifstream is(file.c_str());
+        if (is.is_open()) {
+            std::regex const major("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MAJOR[\\s-[\\r\\n]]*([0-9]*)");
+            std::regex const minor("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MINOR[\\s-[\\r\\n]]*([0-9]*)");
+            std::regex const patch("#define[\\s-[\\r\\n]]*" + name + "_VERSION_PATCH[\\s-[\\r\\n]]*([0-9]*)");
+            std::regex const rc("#define[\\s-[\\r\\n]]*" + name + "_VERSION_RC[\\s-[\\r\\n]]*([0-9]*)");
+            std::smatch match;
+            std::string line;
+            while (std::getline(is, line)) {
+                if (std::regex_search(line, match, major)) {
+                    line.resize(line.size() - std::string(match[1]).size());
+                    line += std::to_string(this->major);
+                } else if (std::regex_search(line, match, minor)) {
+                    line.resize(line.size() - std::string(match[1]).size());
+                    line += std::to_string(this->minor);
+                } else if (std::regex_search(line, match, patch)) {
+                    line.resize(line.size() - std::string(match[1]).size());
+                    line += std::to_string(this->patch);
+                } else if (std::regex_search(line, match, rc)) {
+                    line.resize(line.size() - std::string(match[1]).size());
+                    line += std::to_string(this->rc);
+                }
+                data.push_back(line);
+            }
+            is.close();
+        }
+        std::ofstream os(file.c_str(), std::ios::out | std::ios::trunc);
+        for (auto const& line : data) {
+            os << line << std::endl;
+        }
+    }
+
 private:
     void validate(Type type) const
     {
