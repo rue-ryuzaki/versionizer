@@ -312,6 +312,33 @@ struct Version
         }
     }
 
+    static Version loadFromFile(std::string const& file, std::string const& name)
+    {
+        Version res{ -1, -1, -1, -1 };
+        std::ifstream is(file.c_str());
+        if (is.is_open()) {
+            std::regex const major("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MAJOR[\\s-[\\r\\n]]*([0-9]*)");
+            std::regex const minor("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MINOR[\\s-[\\r\\n]]*([0-9]*)");
+            std::regex const patch("#define[\\s-[\\r\\n]]*" + name + "_VERSION_PATCH[\\s-[\\r\\n]]*([0-9]*)");
+            std::regex const rc("#define[\\s-[\\r\\n]]*" + name + "_VERSION_RC[\\s-[\\r\\n]]*([0-9]*)");
+            std::smatch match;
+            std::string line;
+            while (std::getline(is, line)) {
+                if (std::regex_search(line, match, major)) {
+                    res.major = std::stoi(std::string(match[1]));
+                } else if (std::regex_search(line, match, minor)) {
+                    res.minor = std::stoi(std::string(match[1]));
+                } else if (std::regex_search(line, match, patch)) {
+                    res.patch = std::stoi(std::string(match[1]));
+                } else if (std::regex_search(line, match, rc)) {
+                    res.rc = std::stoi(std::string(match[1]));
+                }
+            }
+            is.close();
+        }
+        return res;
+    }
+
 private:
     void validate(Type type) const
     {
@@ -378,33 +405,6 @@ private:
         }
     }
 };
-
-static Version loadVersionFromFile(std::string const& file, std::string const& name)
-{
-    Version res{ -1, -1, -1, -1 };
-    std::ifstream is(file.c_str());
-    if (is.is_open()) {
-        std::regex const major("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MAJOR[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const minor("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MINOR[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const patch("#define[\\s-[\\r\\n]]*" + name + "_VERSION_PATCH[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const rc("#define[\\s-[\\r\\n]]*" + name + "_VERSION_RC[\\s-[\\r\\n]]*([0-9]*)");
-        std::smatch match;
-        std::string line;
-        while (std::getline(is, line)) {
-            if (std::regex_search(line, match, major)) {
-                res.major = std::stoi(std::string(match[1]));
-            } else if (std::regex_search(line, match, minor)) {
-                res.minor = std::stoi(std::string(match[1]));
-            } else if (std::regex_search(line, match, patch)) {
-                res.patch = std::stoi(std::string(match[1]));
-            } else if (std::regex_search(line, match, rc)) {
-                res.rc = std::stoi(std::string(match[1]));
-            }
-        }
-        is.close();
-    }
-    return res;
-}
 
 class Versionizer
 {
