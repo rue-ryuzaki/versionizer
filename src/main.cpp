@@ -18,6 +18,8 @@ int main(int argc, char* argv[])
             .choices({ "major", "minor", "patch", "rc", "rc-major", "rc-minor" })
             .default_value("")
             .help("version patch type");
+    parser.add_argument("--patch")
+            .action("store_true").help("patch version in source file");
 
     auto args = parser.parse_args();
 
@@ -26,9 +28,11 @@ int main(int argc, char* argv[])
 
     auto versionFile = args.get<std::string>("source");
     auto programName = args.get<std::string>("program");
+    std::cout << "program " << programName << std::endl;
+    std::cout << "analize " << versionFile << std::endl;
 
-    auto version = versionizer::loadVersionFromFile(versionFile, programName);
-    std::cout << "version v" << version.to_string(ver.type()) << std::endl;
+    auto version = versionizer::Version::loadFromFile(versionFile, programName);
+    std::cout << "old version v" << version.to_string(ver.type()) << std::endl;
 
     auto versionPatch = args.get<std::string>("apply");
     if (!versionPatch.empty()) {
@@ -45,9 +49,12 @@ int main(int argc, char* argv[])
         } else if (versionPatch == "rc-minor") {
             version.apply_rc_minor(ver.type());
         } else {
-            throw std::logic_error("invalid apply patch type '" + versionPatch + "'");
+            throw std::logic_error("invalid apply version patch type '" + versionPatch + "'");
         }
-        std::cout << "version v" << version.to_string(ver.type()) << std::endl;
+        std::cout << "new version v" << version.to_string(ver.type()) << std::endl;
+        if (args.get<bool>("patch")) {
+            version.patchFile(versionFile, programName);
+        }
     }
     return 0;
 }
