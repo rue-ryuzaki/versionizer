@@ -66,6 +66,7 @@ struct Version
 
     std::string to_string(Type type) const;
 
+    static Version from_string(std::string const& str);
     static Version loadFromFile(std::string const& file, std::string const& name);
 
     void patchFile(std::string const& file, std::string const& name) const;

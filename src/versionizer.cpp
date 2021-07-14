@@ -329,6 +329,40 @@ std::string Version::to_string(Type type) const
 }
 
 // -----------------------------------------------------------------------------
+Version Version::from_string(std::string const& str)
+{
+    Version res{ -1, -1, -1, -1 };
+    std::smatch match;
+    if (std::regex_search(str, match, std::regex("^([0-9]+)$"))) {
+        res.major = std::stoi(std::string(match[1]));
+        res.minor = 0;
+        res.patch = 0;
+        res.rc = 0;
+    } else if (std::regex_search(str, match, std::regex("^([0-9]+).([0-9]+)$"))) {
+        res.major = std::stoi(std::string(match[1]));
+        res.minor = std::stoi(std::string(match[2]));
+        res.patch = 0;
+        res.rc = 0;
+    } else if (std::regex_search(str, match, std::regex("^([0-9]+).([0-9]+).([0-9]+)$"))) {
+        res.major = std::stoi(std::string(match[1]));
+        res.minor = std::stoi(std::string(match[2]));
+        res.patch = std::stoi(std::string(match[3]));
+        res.rc = 0;
+    } else if (std::regex_search(str, match, std::regex("^([0-9]+)-rc([0-9]+)$"))) {
+        res.major = std::stoi(std::string(match[1]));
+        res.minor = 0;
+        res.patch = 0;
+        res.rc = std::stoi(std::string(match[2]));
+    } else if (std::regex_search(str, match, std::regex("^([0-9]+).([0-9]+)-rc([0-9]+)$"))) {
+        res.major = std::stoi(std::string(match[1]));
+        res.minor = std::stoi(std::string(match[2]));
+        res.patch = 0;
+        res.rc = std::stoi(std::string(match[3]));
+    }
+    return res;
+}
+
+// -----------------------------------------------------------------------------
 Version Version::loadFromFile(std::string const& file, std::string const& name)
 {
     Version res{ -1, -1, -1, -1 };

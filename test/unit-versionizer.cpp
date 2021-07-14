@@ -69,6 +69,56 @@ TEST_CASE("versionToString() check", "[versionizer]")
     }
 }
 
+TEST_CASE("version from string check", "[versionizer]")
+{
+    auto _check_version_conversion = [] (std::string const& str, versionizer::Type type) -> bool
+    {
+        return versionizer::Version::from_string(str).to_string(type) == str;
+    };
+
+    SECTION("type M") {
+        auto type = versionizer::M;
+
+        REQUIRE(_check_version_conversion("0", type));
+        REQUIRE(_check_version_conversion("1", type));
+    }
+
+    SECTION("type MM") {
+        auto type = versionizer::MM;
+
+        REQUIRE(_check_version_conversion("0.0", type));
+        REQUIRE(_check_version_conversion("1.2", type));
+    }
+
+    SECTION("type MR") {
+        auto type = versionizer::MR;
+
+        REQUIRE(_check_version_conversion("0", type));
+        REQUIRE(_check_version_conversion("1-rc4", type));
+    }
+
+    SECTION("type MMP") {
+        auto type = versionizer::MMP;
+
+        REQUIRE(_check_version_conversion("0.0.0", type));
+        REQUIRE(_check_version_conversion("1.2.3", type));
+    }
+
+    SECTION("type MMR") {
+        auto type = versionizer::MMR;
+
+        REQUIRE(_check_version_conversion("0.0", type));
+        REQUIRE(_check_version_conversion("1-rc4", type));
+    }
+
+    SECTION("type MMPR") {
+        auto type = versionizer::MMPR;
+
+        REQUIRE(_check_version_conversion("0.0.0", type));
+        REQUIRE(_check_version_conversion("1.2-rc4", type));
+    }
+}
+
 TEST_CASE("version change check", "[versionizer]")
 {
     auto vizer = versionizer::Versionizer();
