@@ -29,6 +29,37 @@
 #include <stdexcept>
 
 namespace versionizer {
+namespace detail {
+// -----------------------------------------------------------------------------
+inline std::regex _create_regex(std::string const& name, std::string const& type)
+{
+    return std::regex("#define[\\s-[\\r\\n]]*" + name + "_VERSION_" + type + "[\\s-[\\r\\n]]*([0-9]*)");
+}
+
+// -----------------------------------------------------------------------------
+inline std::regex _create_regex_major(std::string const& name)
+{
+    return _create_regex(name, "MAJOR");
+}
+
+// -----------------------------------------------------------------------------
+inline std::regex _create_regex_minor(std::string const& name)
+{
+    return _create_regex(name, "MINOR");
+}
+
+// -----------------------------------------------------------------------------
+inline std::regex _create_regex_patch(std::string const& name)
+{
+    return _create_regex(name, "PATCH");
+}
+
+// -----------------------------------------------------------------------------
+inline std::regex _create_regex_rc(std::string const& name)
+{
+    return _create_regex(name, "RC");
+}
+}
 // -----------------------------------------------------------------------------
 // -- Version ------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -300,20 +331,20 @@ Version Version::loadFromFile(std::string const& file, std::string const& name)
     Version res{ -1, -1, -1, -1 };
     std::ifstream is(file.c_str());
     if (is.is_open()) {
-        std::regex const major("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MAJOR[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const minor("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MINOR[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const patch("#define[\\s-[\\r\\n]]*" + name + "_VERSION_PATCH[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const rc("#define[\\s-[\\r\\n]]*" + name + "_VERSION_RC[\\s-[\\r\\n]]*([0-9]*)");
+        std::regex const regex_major = detail::_create_regex_major(name);
+        std::regex const regex_minor = detail::_create_regex_minor(name);
+        std::regex const regex_patch = detail::_create_regex_patch(name);
+        std::regex const regex_rc = detail::_create_regex_rc(name);
         std::smatch match;
         std::string line;
         while (std::getline(is, line)) {
-            if (std::regex_search(line, match, major)) {
+            if (std::regex_search(line, match, regex_major)) {
                 res.major = std::stoi(std::string(match[1]));
-            } else if (std::regex_search(line, match, minor)) {
+            } else if (std::regex_search(line, match, regex_minor)) {
                 res.minor = std::stoi(std::string(match[1]));
-            } else if (std::regex_search(line, match, patch)) {
+            } else if (std::regex_search(line, match, regex_patch)) {
                 res.patch = std::stoi(std::string(match[1]));
-            } else if (std::regex_search(line, match, rc)) {
+            } else if (std::regex_search(line, match, regex_rc)) {
                 res.rc = std::stoi(std::string(match[1]));
             }
         }
@@ -328,25 +359,25 @@ void Version::patchFile(std::string const& file, std::string const& name) const
     std::vector<std::string> data;
     std::ifstream is(file.c_str());
     if (is.is_open()) {
-        std::regex const major("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MAJOR[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const minor("#define[\\s-[\\r\\n]]*" + name + "_VERSION_MINOR[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const patch("#define[\\s-[\\r\\n]]*" + name + "_VERSION_PATCH[\\s-[\\r\\n]]*([0-9]*)");
-        std::regex const rc("#define[\\s-[\\r\\n]]*" + name + "_VERSION_RC[\\s-[\\r\\n]]*([0-9]*)");
+        std::regex const regex_major = detail::_create_regex_major(name);
+        std::regex const regex_minor = detail::_create_regex_minor(name);
+        std::regex const regex_patch = detail::_create_regex_patch(name);
+        std::regex const regex_rc = detail::_create_regex_rc(name);
         std::smatch match;
         std::string line;
         while (std::getline(is, line)) {
-            if (std::regex_search(line, match, major)) {
+            if (std::regex_search(line, match, regex_major)) {
                 line.resize(line.size() - std::string(match[1]).size());
-                line += std::to_string(this->major);
-            } else if (std::regex_search(line, match, minor)) {
+                line += std::to_string(major);
+            } else if (std::regex_search(line, match, regex_minor)) {
                 line.resize(line.size() - std::string(match[1]).size());
-                line += std::to_string(this->minor);
-            } else if (std::regex_search(line, match, patch)) {
+                line += std::to_string(minor);
+            } else if (std::regex_search(line, match, regex_patch)) {
                 line.resize(line.size() - std::string(match[1]).size());
-                line += std::to_string(this->patch);
-            } else if (std::regex_search(line, match, rc)) {
+                line += std::to_string(patch);
+            } else if (std::regex_search(line, match, regex_rc)) {
                 line.resize(line.size() - std::string(match[1]).size());
-                line += std::to_string(this->rc);
+                line += std::to_string(rc);
             }
             data.push_back(line);
         }
