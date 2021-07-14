@@ -59,7 +59,8 @@ inline std::regex _create_regex_rc(std::string const& name)
 {
     return _create_regex(name, "RC");
 }
-}
+} // detail
+
 // -----------------------------------------------------------------------------
 // -- Version ------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -68,11 +69,12 @@ Version& Version::apply_major(Type type)
     validate(type);
     switch (type) {
         case M :
-            ++major;
-            break;
         case MM :
+        case MMP :
             ++major;
             minor = 0;
+            patch = 0;
+            rc = 0;
             break;
         case MR :
             if (rc == 0) {
@@ -80,9 +82,6 @@ Version& Version::apply_major(Type type)
             } else {
                 rc = 0;
             }
-            break;
-        case MMP :
-            ++major;
             minor = 0;
             patch = 0;
             break;
@@ -96,6 +95,7 @@ Version& Version::apply_major(Type type)
                 }
                 rc = 0;
             }
+            patch = 0;
             break;
         case MMPR :
             if (rc == 0) {
@@ -124,11 +124,10 @@ Version& Version::apply_minor(Type type)
     validate(type);
     switch (type) {
         case MM :
-            ++minor;
-            break;
         case MMP :
             ++minor;
             patch = 0;
+            rc = 0;
             break;
         case MMR :
             if (rc == 0) {
@@ -136,6 +135,7 @@ Version& Version::apply_minor(Type type)
             } else {
                 rc = 0;
             }
+            patch = 0;
             break;
         case MMPR :
             if (rc == 0) {
@@ -161,6 +161,7 @@ Version& Version::apply_patch(Type type)
     switch (type) {
         case MMP :
             ++patch;
+            rc = 0;
             break;
         case MMPR :
             if (rc == 0) {
@@ -187,6 +188,8 @@ Version& Version::apply_rc(Type type)
                 throw std::invalid_argument("error: invalid major version");
             }
             ++rc;
+            minor = 0;
+            patch = 0;
             break;
         case MMR :
             if (rc == 0) {
@@ -198,6 +201,7 @@ Version& Version::apply_rc(Type type)
                 throw std::invalid_argument("error: invalid minor version");
             }
             ++rc;
+            patch = 0;
             break;
         case MMPR :
             if (rc == 0) {
@@ -227,6 +231,8 @@ Version& Version::apply_rc_major(Type type)
                 throw std::invalid_argument("error: invalid major version");
             }
             ++rc;
+            minor = 0;
+            patch = 0;
             break;
         case MMR :
             if (rc == 0) {
@@ -238,6 +244,7 @@ Version& Version::apply_rc_major(Type type)
                 throw std::invalid_argument("error: invalid minor version");
             }
             ++rc;
+            patch = 0;
             break;
         case MMPR :
             if (rc == 0) {
@@ -289,14 +296,12 @@ std::string Version::to_string(Type type) const
         case M :
             return std::to_string(major);
         case MM :
-            return std::to_string(major)
-                    + "." + std::to_string(minor);
+            return std::to_string(major) + "." + std::to_string(minor);
         case MR :
             if (rc == 0) {
                 return std::to_string(major);
             } else {
-                return std::to_string(major)
-                        + "-rc" + std::to_string(rc);
+                return std::to_string(major) + "-rc" + std::to_string(rc);
             }
         case MMP :
             return std::to_string(major)
@@ -304,11 +309,9 @@ std::string Version::to_string(Type type) const
                     + "." + std::to_string(patch);
         case MMR :
             if (rc == 0) {
-                return std::to_string(major)
-                        + "." + std::to_string(minor);
+                return std::to_string(major) + "." + std::to_string(minor);
             } else {
-                return std::to_string(major)
-                        + "-rc" + std::to_string(rc);
+                return std::to_string(major) + "-rc" + std::to_string(rc);
             }
         case MMPR :
             if (rc == 0) {
