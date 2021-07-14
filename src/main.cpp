@@ -19,6 +19,8 @@ int main(int argc, char* argv[])
             .required(true).help("source file with version");
     parser.add_argument("--program")
             .required(true).help("program name in source file");
+    parser.add_argument("--file")
+            .action("append").nargs("+").help("file names with version M.M.P");
     parser.add_argument("--apply")
             .choices({ "major", "minor", "patch", "rc", "rc-major", "rc-minor" })
             .default_value("")
@@ -43,6 +45,7 @@ int main(int argc, char* argv[])
 
     auto versionPatch = args.get<std::string>("apply");
     if (!versionPatch.empty()) {
+        auto oldVersion = version;
         if (versionPatch == "major") {
             version.apply_major(ver.type());
         } else if (versionPatch == "minor") {
@@ -61,6 +64,10 @@ int main(int argc, char* argv[])
         std::cout << "new version v" << version.to_string(ver.type()) << std::endl;
         if (args.get<bool>("patch")) {
             version.patchFile(versionFile, programName);
+            auto const files = args.get<std::vector<std::string> >("file");
+            for (auto const& file : files) {
+                ver.patchFile(file, oldVersion, version);
+            }
             if (args.get<bool>("commit")) {
                 std::string message = "\"[vzr] Version changed to v" + version.to_string(ver.type()) + "\"";
                 if (command("git add " + versionFile) == 0 && command("git commit -m " + message) == 0) {

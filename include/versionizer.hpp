@@ -477,6 +477,31 @@ public:
         return ver.to_string(type());
     }
 
+    void patchFile(std::string const& file, Version const& oldVersion, Version const& newVersion, bool replaceOnce = true) const
+    {
+        auto const oldVer = oldVersion.to_string(type());
+        auto const newVer = newVersion.to_string(type());
+        std::vector<std::string> data;
+        std::ifstream is(file.c_str());
+        if (is.is_open()) {
+            bool replaced = false;
+            std::string line;
+            while (std::getline(is, line)) {
+                size_t pos = line.find(oldVer);
+                if (pos != std::string::npos && (!replaceOnce || !replaced)) {
+                    line.replace(pos, oldVer.length(), newVer);
+                    replaced = true;
+                }
+                data.push_back(line);
+            }
+            is.close();
+        }
+        std::ofstream os(file.c_str(), std::ios::out | std::ios::trunc);
+        for (auto const& line : data) {
+            os << line << std::endl;
+        }
+    }
+
 private:
     Type m_type;
 };
