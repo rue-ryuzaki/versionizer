@@ -2,6 +2,11 @@
 
 #include "versionizer.hpp"
 
+int command(std::string const& str)
+{
+    return system(str.c_str());
+}
+
 int main(int argc, char* argv[])
 {
     auto parser = argparse::ArgumentParser(argc, argv)
@@ -20,6 +25,8 @@ int main(int argc, char* argv[])
             .help("version patch type");
     parser.add_argument("--patch")
             .action("store_true").help("patch version in source file");
+    parser.add_argument("--commit")
+            .action("store_true").help("commit changes in git repository");
 
     auto args = parser.parse_args();
 
@@ -54,6 +61,12 @@ int main(int argc, char* argv[])
         std::cout << "new version v" << version.to_string(ver.type()) << std::endl;
         if (args.get<bool>("patch")) {
             version.patchFile(versionFile, programName);
+            if (args.get<bool>("commit")) {
+                std::string message = "\"[vzr] Version changed to v" + version.to_string(ver.type()) + "\"";
+                if (command("git add " + versionFile) == 0 && command("git commit -m " + message) == 0) {
+                    std::cout << "commit " << message << " done" << std::endl;
+                }
+            }
         }
     }
     return 0;
