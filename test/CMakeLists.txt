@@ -1,5 +1,6 @@
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../third_party")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../src")
 
 add_library(catch_main OBJECT
     "unit.cpp"

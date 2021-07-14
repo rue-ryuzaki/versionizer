@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 
-#include "versionizer.hpp"
+#include "versionizer.cpp"
 
 TEST_CASE("versionToString() check", "[versionizer]")
 {

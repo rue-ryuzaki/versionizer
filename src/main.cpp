@@ -2,11 +2,13 @@
 
 #include "versionizer.hpp"
 
+// -----------------------------------------------------------------------------
 int command(std::string const& str)
 {
     return system(str.c_str());
 }
 
+// -----------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
     auto parser = argparse::ArgumentParser(argc, argv)
