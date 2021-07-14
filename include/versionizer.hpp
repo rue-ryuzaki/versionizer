@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Version organizer for C/C++ (Versionizer v0.1-rc1)
+ * Version organizer for C/C++ (Versionizer v0.1-rc2)
  *
  * Copyright (c) 2021 Golubchikov Mihail
  *
@@ -32,7 +32,7 @@
 #define VERSIONIZER_VERSION_MAJOR 0
 #define VERSIONIZER_VERSION_MINOR 1
 #define VERSIONIZER_VERSION_PATCH 0
-#define VERSIONIZER_VERSION_RC 1
+#define VERSIONIZER_VERSION_RC 2
 
 namespace versionizer {
 // -----------------------------------------------------------------------------
