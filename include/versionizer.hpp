@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Version organizer for C/C++ (Versionizer v0.0.0)
+ * Version organizer for C/C++ (Versionizer v0.1-rc1)
  *
  * Copyright (c) 2021 Golubchikov Mihail
  *
@@ -33,9 +33,9 @@
 #include <string>
 
 #define VERSIONIZER_VERSION_MAJOR 0
-#define VERSIONIZER_VERSION_MINOR 0
+#define VERSIONIZER_VERSION_MINOR 1
 #define VERSIONIZER_VERSION_PATCH 0
-#define VERSIONIZER_VERSION_RC 0
+#define VERSIONIZER_VERSION_RC 1
 
 namespace versionizer {
 enum Type {
