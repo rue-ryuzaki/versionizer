@@ -33,7 +33,7 @@ namespace detail {
 // -----------------------------------------------------------------------------
 inline std::regex _create_regex(std::string const& name, std::string const& type)
 {
-    return std::regex("#define[\\s-[\\r\\n]]*" + name + "_VERSION_" + type + "[\\s-[\\r\\n]]*([0-9]*)");
+    return std::regex("#define[\\s-[\\r\\n]]*" + name + "_VERSION_" + type + "[\\s-[\\r\\n]]*([0-9]+)");
 }
 
 // -----------------------------------------------------------------------------
